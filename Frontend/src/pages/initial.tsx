@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Activity, Camera, Cpu, Hand, Sparkles, Zap, Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import heroHand from "@/assets/hero-hand.jpg";
 import { useHandSign } from "@/hooks/useWebSocket";
 
 const SIGNS = [
@@ -13,9 +12,8 @@ const SIGNS = [
 
 const Index = () => {
   const [recording, setRecording] = useState(true);
-  const { prediction, confidence, connected } = useHandSign();
+  const { prediction, confidence, connected, frameSrc } = useHandSign();
 
-  // Map prediction label to emoji
   const getEmoji = (label: string) => {
     const map: Record<string, string> = {
       "Open Hand": "✋",
@@ -29,7 +27,7 @@ const Index = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Background grid */}
+      {/* Background */}
       <div className="pointer-events-none absolute inset-0 grid-bg opacity-40" />
       <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-accent/20 blur-[120px]" />
       <div className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[120px]" />
@@ -65,9 +63,11 @@ const Index = () => {
       {/* Hero */}
       <main className="relative z-10 mx-auto max-w-7xl px-6 pt-8 pb-24">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+
           {/* Left copy */}
           <div className="space-y-8">
-            {/* Connection status badge */}
+
+            {/* Connection badge */}
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary/40 px-4 py-1.5 backdrop-blur">
               <span className="relative flex h-2 w-2">
                 <span
@@ -135,10 +135,10 @@ const Index = () => {
 
           {/* Right viewer */}
           <div className="relative">
-            {/* Decorative corners */}
             <div className="absolute -inset-4 rounded-[2rem] border border-primary/20" />
 
             <div className="scanline relative overflow-hidden rounded-2xl border border-border bg-gradient-surface shadow-elegant">
+
               {/* Top bar */}
               <div className="flex items-center justify-between border-b border-border bg-background/40 px-4 py-3 backdrop-blur">
                 <div className="flex items-center gap-3">
@@ -158,25 +158,39 @@ const Index = () => {
                     )}
                   </button>
                   <span className="font-mono text-xs text-muted-foreground">
-                    CAM_01 · 1080p
+                    CAM_01 · 480p
                   </span>
                 </div>
                 <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground">
                   <Activity className="h-3 w-3 text-primary" />
-                  {connected ? "20 FPS" : "0 FPS"}
+                  {connected ? "30 FPS" : "0 FPS"}
                 </div>
               </div>
 
               {/* Viewport */}
-              <div className="relative aspect-square">
-                <img
-                  src={heroHand}
-                  alt="Live hand keypoint tracking visualization"
-                  width={1280}
-                  height={1280}
-                  className="absolute inset-0 h-full w-full object-cover opacity-90 animate-float"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/40" />
+              <div className="relative aspect-square bg-black">
+
+                {/* Streamed frame from Python */}
+                {frameSrc ? (
+                  <img
+                    src={frameSrc}
+                    alt="Live camera feed with landmarks"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                ) : (
+                  /* Placeholder when backend not connected */
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary/40">
+                      <Camera className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <p className="font-mono text-sm text-muted-foreground">
+                      {connected ? "Waiting for frame..." : "Start python server.py to begin"}
+                    </p>
+                  </div>
+                )}
+
+                {/* Gradient overlay */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/20" />
 
                 {/* Corner brackets */}
                 {[
