@@ -2,17 +2,20 @@ import { useState } from "react";
 import { Activity, Camera, Cpu, Hand, Sparkles, Zap, Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useHandSign } from "@/hooks/useWebSocket";
-
+import hand from "@/assets/hero-hand.jpg";
 const SIGNS = [
   { sign: "✋", label: "Open Hand" },
   { sign: "✊", label: "Closed Hand" },
   { sign: "👍", label: "Thumbs Up" },
   { sign: "✌️", label: "Peace" },
+  { sign: "🤙", label: "Call Me" },
+  { sign: "👆", label: "Point Up" },
+  { sign: "😎", label: "Cool" },
 ];
 
 const Index = () => {
-  const [recording, setRecording] = useState(true);
-  const { prediction, confidence, connected, frameSrc } = useHandSign();
+  const [recording, setRecording] = useState(false);
+  const { prediction, confidence, connected, frameSrc } = useHandSign(recording);
 
   const getEmoji = (label: string) => {
     const map: Record<string, string> = {
@@ -20,6 +23,9 @@ const Index = () => {
       "Closed Hand": "✊",
       "Thumbs Up": "👍",
       "Peace": "✌️",
+      "Call Me": "🤙",
+      "Point Up": "👆",
+      "Cool": "😎",
       "No hand detected": "🖐️",
     };
     return map[label] ?? "🤚";
@@ -33,7 +39,7 @@ const Index = () => {
       <div className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[120px]" />
 
       {/* Nav */}
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
+      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-0 py-6">
         <div className="flex items-center gap-3">
           <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary glow-primary">
             <Hand className="h-5 w-5 text-primary-foreground" />
@@ -61,7 +67,7 @@ const Index = () => {
       </header>
 
       {/* Hero */}
-      <main className="relative z-10 mx-auto max-w-7xl px-6 pt-8 pb-24">
+      <main className="relative z-10 mx-auto max-w-7xl px-0 pt-8 pb-24">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
 
           {/* Left copy */}
@@ -101,6 +107,7 @@ const Index = () => {
               <Button
                 size="lg"
                 className="gap-2 bg-gradient-primary text-primary-foreground glow-primary hover:opacity-90"
+                onClick={() => setRecording(true)}
               >
                 <Camera className="h-4 w-4" /> Start Detection
               </Button>
@@ -116,7 +123,7 @@ const Index = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 pt-6">
               {[
-                { k: "4", v: "Gestures" },
+                { k: "7", v: "Gestures" },
                 { k: "21", v: "Keypoints" },
                 { k: "<16ms", v: "Latency" },
               ].map((s) => (
@@ -170,7 +177,6 @@ const Index = () => {
               {/* Viewport */}
               <div className="relative aspect-square bg-black">
 
-                {/* Streamed frame from Python */}
                 {frameSrc ? (
                   <img
                     src={frameSrc}
@@ -178,14 +184,26 @@ const Index = () => {
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                 ) : (
-                  /* Placeholder when backend not connected */
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary/40">
-                      <Camera className="h-8 w-8 text-muted-foreground" />
+                    {/* Hero hand image */}
+                    <img
+                      src={hand}
+                      alt="Hand preview"
+                      className="absolute inset-0 h-full w-full object-cover opacity-60"
+                    />
+                    {/* Overlay text */}
+                    <div className="relative z-10 flex flex-col items-center gap-4">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary/40 backdrop-blur">
+                        <Camera className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <p className="font-mono text-sm text-muted-foreground drop-shadow">
+                        {recording
+                          ? connected
+                            ? "Waiting for frame..."
+                            : "Connecting to server..."
+                          : "Click Start Detection to begin"}
+                      </p>
                     </div>
-                    <p className="font-mono text-sm text-muted-foreground">
-                      {connected ? "Waiting for frame..." : "Start python server.py to begin"}
-                    </p>
                   </div>
                 )}
 
@@ -252,7 +270,7 @@ const Index = () => {
               <p className="font-mono text-xs uppercase tracking-[0.25em] text-primary">
                 / gesture library
               </p>
-              <h3 className="mt-2 text-3xl font-bold md:text-4xl">Trained on 4 classes</h3>
+              <h3 className="mt-2 text-3xl font-bold md:text-4xl">Trained on 7 classes</h3>
             </div>
             <Button
               variant="ghost"
@@ -331,7 +349,7 @@ const Index = () => {
       </main>
 
       <footer className="relative z-10 border-t border-border">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 font-mono text-xs text-muted-foreground">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-0 py-6 font-mono text-xs text-muted-foreground">
           <span>© 2026 SIGNAL.AI</span>
           <span className="flex items-center gap-2">
             <span

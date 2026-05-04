@@ -6,7 +6,7 @@ interface WSData {
   confidence: number;
 }
 
-export function useHandSign() {
+export function useHandSign(active: boolean) {
   const [prediction, setPrediction] = useState<string>("No hand detected");
   const [confidence, setConfidence] = useState<number>(0);
   const [connected, setConnected] = useState<boolean>(false);
@@ -14,6 +14,16 @@ export function useHandSign() {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+    if (!active) {
+      wsRef.current?.close();
+      wsRef.current = null;
+      setConnected(false);
+      setFrameSrc("");
+      setPrediction("No hand detected");
+      setConfidence(0);
+      return;
+    }
+
     const ws = new WebSocket("ws://localhost:8765");
     wsRef.current = ws;
 
@@ -42,7 +52,7 @@ export function useHandSign() {
     };
 
     return () => ws.close();
-  }, []);
+  }, [active]);
 
   return { prediction, confidence, connected, frameSrc };
 }

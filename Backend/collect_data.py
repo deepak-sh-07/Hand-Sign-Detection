@@ -23,7 +23,10 @@ labels = {
     ord('0'): 0,
     ord('1'): 1,
     ord('2'): 2,
-    ord('3'): 3
+    ord('3'): 3,
+    ord('4'): 4,
+    ord('5'): 5,
+    ord('6'): 6
 }
 
 # cooldown to prevent multiple saves per press
