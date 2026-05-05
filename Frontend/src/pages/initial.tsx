@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Activity, Camera, Cpu, Hand, Sparkles, Zap, Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useHandSign } from "@/hooks/useWebSocket";
 import hand from "@/assets/hero-hand.jpg";
+
 const SIGNS = [
   { sign: "✋", label: "Open Hand" },
   { sign: "✊", label: "Closed Hand" },
@@ -13,33 +14,107 @@ const SIGNS = [
   { sign: "😎", label: "Cool" },
 ];
 
+// ── Animated counter hook ────────────────────────────────────────────────────
+function useCountUp(target: number, duration = 800) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    const steps = 30;
+    const inc = target / steps;
+    let cur = 0;
+    const t = setInterval(() => {
+      cur = Math.min(cur + inc, target);
+      setVal(Math.round(cur));
+      if (cur >= target) clearInterval(t);
+    }, duration / steps);
+    return () => clearInterval(t);
+  }, [target, duration]);
+  return val;
+}
+
+// ── EMA-smoothed confidence — kills jitter from noisy model output ────────────
+// alpha = 0.15: new readings only shift the display 15% toward the raw value
+// per update, so rapid 30→80→40 swings become a calm, drifting number.
+function useSmoothedConfidence(raw: number, alpha = 0.15) {
+  const emaRef = useRef(raw);
+  const [displayed, setDisplayed] = useState(raw);
+
+  useEffect(() => {
+    if (raw === 0) {
+      emaRef.current = 0;
+      setDisplayed(0);
+      return;
+    }
+    emaRef.current = alpha * raw + (1 - alpha) * emaRef.current;
+    setDisplayed(Math.round(emaRef.current));
+  }, [raw, alpha]);
+
+  return displayed;
+}
+
 const Index = () => {
   const [recording, setRecording] = useState(false);
   const { prediction, confidence, connected, frameSrc } = useHandSign(recording);
+
+  // ── New detection flash ──────────────────────────────────────────────────
+  const prevPrediction = useRef(prediction);
+  const [flash, setFlash] = useState(false);
+  useEffect(() => {
+    if (
+      prediction !== prevPrediction.current &&
+      prediction !== "No hand detected"
+    ) {
+      setFlash(true);
+      const id = setTimeout(() => setFlash(false), 400);
+      prevPrediction.current = prediction;
+      return () => clearTimeout(id);
+    }
+  }, [prediction]);
+
+  // ── REC elapsed timer ────────────────────────────────────────────────────
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!recording) {
+      setElapsed(0);
+      return;
+    }
+    const id = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(id);
+  }, [recording]);
+
+  const formatTime = (s: number) =>
+    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
+  // ── Animated stat counters ───────────────────────────────────────────────
+  const gestureCount = useCountUp(7, 700);
+  const keypointCount = useCountUp(21, 900);
+
+  // ── EMA-smoothed confidence display (no more jitter) ─────────────────────
+  const displayedConfidence = useSmoothedConfidence(confidence);
 
   const getEmoji = (label: string) => {
     const map: Record<string, string> = {
       "Open Hand": "✋",
       "Closed Hand": "✊",
       "Thumbs Up": "👍",
-      "Peace": "✌️",
+      Peace: "✌️",
       "Call Me": "🤙",
       "Point Up": "👆",
-      "Cool": "😎",
+      Cool: "😎",
       "No hand detected": "🖐️",
     };
     return map[label] ?? "🤚";
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      {/* Background */}
-      <div className="pointer-events-none absolute inset-0 grid-bg opacity-40" />
-      <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-accent/20 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[120px]" />
+    <div className="relative min-h-screen">
+      {/* Background — fixed so it truly covers the full viewport edge-to-edge */}
+      <div className="pointer-events-none fixed inset-0 grid-bg opacity-40" style={{ zIndex: 0 }} />
+      <div className="pointer-events-none fixed inset-0" style={{ zIndex: 0, background: "radial-gradient(ellipse 80% 60% at 20% 0%, hsl(186 100% 55% / 0.12), transparent 60%), radial-gradient(ellipse 60% 50% at 90% 100%, hsl(305 100% 60% / 0.12), transparent 60%)" }} />
+      <div className="pointer-events-none fixed -top-40 -right-40 h-[600px] w-[600px] rounded-full bg-accent/20 blur-[140px]" style={{ zIndex: 0 }} />
+      <div className="pointer-events-none fixed -bottom-40 -left-40 h-[600px] w-[600px] rounded-full bg-primary/20 blur-[140px]" style={{ zIndex: 0 }} />
 
-      {/* Nav */}
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-0 py-6">
+      {/* Nav — logo only, no links */}
+      <header className="relative z-10 mx-auto flex max-w-7xl items-center px-0 pt-2 pb-0">
         <div className="flex items-center gap-3">
           <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary glow-primary">
             <Hand className="h-5 w-5 text-primary-foreground" />
@@ -53,21 +128,10 @@ const Index = () => {
             </h2>
           </div>
         </div>
-        <nav className="hidden items-center gap-8 md:flex">
-          {["Detect", "Models", "Dataset", "Docs"].map((l) => (
-            <a
-              key={l}
-              href="#"
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {l}
-            </a>
-          ))}
-        </nav>
       </header>
 
       {/* Hero */}
-      <main className="relative z-10 mx-auto max-w-7xl px-0 pt-8 pb-24">
+      <main className="relative z-10 mx-auto max-w-7xl px-0 pt-0 pb-24">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
 
           {/* Left copy */}
@@ -99,17 +163,31 @@ const Index = () => {
             </h1>
 
             <p className="max-w-md text-lg leading-relaxed text-muted-foreground">
-              A neural vision engine that translates gestures into commands. 21 keypoints,
-              4 classes, sub‑16ms latency — straight from your webcam.
+              A neural vision engine that translates gestures into commands. 21
+              keypoints, 4 classes, sub‑16ms latency — straight from your
+              webcam.
             </p>
 
+            {/* ── FIX 1: CTA button toggles recording state ───────────────── */}
             <div className="flex flex-wrap gap-4">
               <Button
                 size="lg"
-                className="gap-2 bg-gradient-primary text-primary-foreground glow-primary hover:opacity-90"
-                onClick={() => setRecording(true)}
+                className={`gap-2 transition-all duration-300 ${
+                  recording
+                    ? "bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/25"
+                    : "bg-gradient-primary text-primary-foreground glow-primary hover:opacity-90"
+                }`}
+                onClick={() => setRecording((r) => !r)}
               >
-                <Camera className="h-4 w-4" /> Start Detection
+                {recording ? (
+                  <>
+                    <Square className="h-4 w-4" /> Stop Detection
+                  </>
+                ) : (
+                  <>
+                    <Camera className="h-4 w-4" /> Start Detection
+                  </>
+                )}
               </Button>
               <Button
                 size="lg"
@@ -120,18 +198,20 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* Stats */}
+            {/* ── IMPROVE 3: Animated count-up stats ──────────────────────── */}
             <div className="grid grid-cols-3 gap-4 pt-6">
               {[
-                { k: "7", v: "Gestures" },
-                { k: "21", v: "Keypoints" },
+                { k: gestureCount.toString(), v: "Gestures" },
+                { k: keypointCount.toString(), v: "Keypoints" },
                 { k: "<16ms", v: "Latency" },
               ].map((s) => (
                 <div
                   key={s.v}
                   className="rounded-2xl border border-border bg-card/40 p-4 backdrop-blur"
                 >
-                  <p className="font-mono text-2xl font-bold text-primary">{s.k}</p>
+                  <p className="font-mono text-2xl font-bold text-primary">
+                    {s.k}
+                  </p>
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">
                     {s.v}
                   </p>
@@ -149,6 +229,7 @@ const Index = () => {
               {/* Top bar */}
               <div className="flex items-center justify-between border-b border-border bg-background/40 px-4 py-3 backdrop-blur">
                 <div className="flex items-center gap-3">
+                  {/* ── IMPROVE 2: REC pill with elapsed timer ───────────── */}
                   <button
                     onClick={() => setRecording((r) => !r)}
                     className="flex h-7 items-center gap-2 rounded-full bg-destructive/15 px-3 text-xs font-mono text-destructive"
@@ -156,7 +237,8 @@ const Index = () => {
                     {recording ? (
                       <>
                         <span className="h-2 w-2 animate-blink rounded-full bg-destructive" />
-                        REC
+                        REC&nbsp;
+                        <span className="opacity-70">{formatTime(elapsed)}</span>
                       </>
                     ) : (
                       <>
@@ -185,13 +267,11 @@ const Index = () => {
                   />
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                    {/* Hero hand image */}
                     <img
                       src={hand}
                       alt="Hand preview"
                       className="absolute inset-0 h-full w-full object-cover opacity-60"
                     />
-                    {/* Overlay text */}
                     <div className="relative z-10 flex flex-col items-center gap-4">
                       <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary/40 backdrop-blur">
                         <Camera className="h-8 w-8 text-muted-foreground" />
@@ -217,14 +297,25 @@ const Index = () => {
                   "bottom-4 left-4 border-l-2 border-b-2",
                   "bottom-4 right-4 border-r-2 border-b-2",
                 ].map((c) => (
-                  <div key={c} className={`absolute h-8 w-8 border-primary ${c}`} />
+                  <div
+                    key={c}
+                    className={`absolute h-8 w-8 border-primary ${c}`}
+                  />
                 ))}
 
-                {/* Detection overlay */}
-                <div className="absolute bottom-6 left-6 right-6 rounded-xl border border-primary/40 bg-background/70 p-4 backdrop-blur-md">
+                {/* ── FIX 4 + IMPROVE 1: Detection overlay with flash ─────── */}
+                <div
+                  className={`absolute bottom-6 left-6 right-6 rounded-xl border border-primary/40 bg-background/70 p-4 backdrop-blur-md transition-colors duration-300 ${
+                    flash ? "bg-primary/20" : "bg-background/70"
+                  }`}
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/15 text-3xl">
+                      <div
+                        className={`flex h-12 w-12 items-center justify-center rounded-lg bg-primary/15 text-3xl transition-transform duration-300 ${
+                          flash ? "scale-110" : "scale-100"
+                        }`}
+                      >
                         {getEmoji(prediction)}
                       </div>
                       <div>
@@ -238,15 +329,20 @@ const Index = () => {
                       <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                         Confidence
                       </p>
-                      <p className="font-mono text-2xl font-bold text-primary">
-                        {confidence}%
+                      {/* ── IMPROVE 5: Animated confidence number ──────────── */}
+                      <p className="font-mono text-2xl font-bold text-primary tabular-nums">
+                        {displayedConfidence}%
                       </p>
                     </div>
                   </div>
+                  {/* Confidence bar tracks the smoothed value too */}
                   <div className="mt-3 h-1 overflow-hidden rounded-full bg-secondary">
                     <div
-                      className="h-full bg-gradient-primary transition-all duration-700"
-                      style={{ width: `${confidence}%` }}
+                      className="h-full bg-gradient-primary"
+                      style={{
+                        width: `${displayedConfidence}%`,
+                        transition: "width 0.4s ease-out",
+                      }}
                     />
                   </div>
                 </div>
@@ -270,7 +366,9 @@ const Index = () => {
               <p className="font-mono text-xs uppercase tracking-[0.25em] text-primary">
                 / gesture library
               </p>
-              <h3 className="mt-2 text-3xl font-bold md:text-4xl">Trained on 7 classes</h3>
+              <h3 className="mt-2 text-3xl font-bold md:text-4xl">
+                Trained on 7 classes
+              </h3>
             </div>
             <Button
               variant="ghost"
@@ -280,7 +378,13 @@ const Index = () => {
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {/* ── FIX 7: Single-row 7-col gesture grid, mobile-responsive ───── */}
+          <div
+            className="grid gap-3"
+            style={{
+              gridTemplateColumns: `repeat(${SIGNS.length}, minmax(0, 1fr))`,
+            }}
+          >
             {SIGNS.map((s) => {
               const isActive = prediction === s.label;
               return (
@@ -342,7 +446,9 @@ const Index = () => {
               <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-primary/10 blur-2xl transition-opacity group-hover:bg-primary/20" />
               <f.icon className="mb-4 h-6 w-6 text-primary" />
               <h4 className="mb-2 text-lg font-semibold">{f.title}</h4>
-              <p className="text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {f.desc}
+              </p>
             </div>
           ))}
         </section>

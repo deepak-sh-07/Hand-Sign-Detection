@@ -151,6 +151,19 @@
   .animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
   .animate-float      { animation: float 6s ease-in-out infinite; }
   .animate-blink      { animation: blink 1.2s ease-in-out infinite; }
+
+  /* NEW: flash animation for new gesture detections */
+  .animate-new-detect { animation: new-detect 0.4s ease-out forwards; }
+
+  /* NEW: Gesture gallery — single row on desktop, 4-col grid on mobile */
+  @media (max-width: 640px) {
+    .gesture-row {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+  }
+
+  /* Tabular nums for confidence counter so digits don't shift layout */
+  .tabular-nums { font-variant-numeric: tabular-nums; }
 }
 
 @keyframes scan {
@@ -171,4 +184,10 @@
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.3; }
+}
+
+/* NEW: Brief cyan flash when a new gesture is detected */
+@keyframes new-detect {
+  0%   { background-color: hsl(186 100% 55% / 0.25); }
+  100% { background-color: hsl(232 47% 6% / 0.70); }
 }
