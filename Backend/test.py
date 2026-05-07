@@ -14,11 +14,14 @@ options = vision.HandLandmarkerOptions(
 gestures = {
     0: "Closed Hand",
     1: "Open Hand",
-    2: "thumbs up",
-    3: "peace",
-    4: "point up",
-    5: "call me",
+    2: "Thumbs up",
+    3: "Peace",
+    4: "Point up",
+    5: "OK",
     6: "Cool",
+    7: "Point Left",
+    8: "Point Right",
+    9: "Thumbs Down"
 }
 detector = vision.HandLandmarker.create_from_options(options) #This initializes the actual ML pipeline for hand tracking using the specified options.
 

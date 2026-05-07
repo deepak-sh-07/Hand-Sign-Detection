@@ -26,7 +26,10 @@ labels = {
     ord('3'): 3,
     ord('4'): 4,
     ord('5'): 5,
-    ord('6'): 6
+    ord('6'): 6,
+    ord('7'): 7,
+    ord('8'): 8,
+    ord('9'): 9,
 }
 
 # cooldown to prevent multiple saves per press
@@ -44,13 +47,12 @@ while cap.isOpened():
 
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
     result = detector.detect(mp_image) #detects hand landmarks in the frame
-
     key = cv2.waitKey(1) & 0xFF #captures key presses
 
     if key == ord('q'):
         break
 
-    if key in labels and result.hand_landmarks:
+    if key in labels and result.hand_landmarks:# if we have both key and hand marks
         current_time = time.time()
 
         # debounce

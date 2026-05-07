@@ -26,9 +26,12 @@ gestures = {
     1: "Open Hand",
     2: "Thumbs Up",
     3: "Peace",
-    4: "point up",
-    5: "call me",
+    4: "Point up",
+    5: "OK",
     6: "Cool",
+    7: "Point Left",
+    8: "Point Right",
+    9: "Thumbs Down"
 }
 
 HAND_CONNECTIONS = [
