@@ -3,7 +3,6 @@
 # 🤚 SIGNAL.AI
 ### Real-Time Hand Gesture Detection Engine
 
-
 <br/>
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
@@ -65,86 +64,91 @@ Random Forest Classifier        ← gesture_model.pkl
 WebSocket Server (ws://localhost:8765)
   │
   ▼
-React Frontend (localhost:5173) ← live annotated frame + prediction
+React Frontend (localhost:5173) ← live annotated frames + predictions
 ```
-## 📸 Screenshots
 
-<div align="center">
-
-<img src="Frontend/src/components/screenshots/1.png" width="49%" />
-<img src="Frontend/src/components/screenshots/2.png" width="49%" />
-
-<img src="Frontend/src/components/screenshots/3.png" width="49%" />
-<img src="Frontend/src/components/screenshots/4.png" width="49%" />
-
-<img src="Frontend/src/components/screenshots/5.png" width="49%" />
-<img src="Frontend/src/components/screenshots/6.png" width="49%" />
-
-</div>
 ---
 
 ## 📁 Project Structure
 
-```
+```bash
 SIGNAL.AI/
 │
-├── 📷  collect.py              # Data collection script (press 0-9 to label)
-├── 🧠  train.py                # Train the Random Forest model
-├── 🌐  server.py               # WebSocket server — streams frames + predictions
-├── 🤖  gesture_model.pkl       # Trained model (generated after training)
-├── 📊  gesture_data.csv        # Collected training data
-├── 🗂️  hand_landmarker.task    # MediaPipe pretrained hand tracking model
+├── backend/
+│   ├── collect_data.py         # Collect gesture landmark data
+│   ├── model.py                # Train Random Forest classifier
+│   ├── server.py               # WebSocket backend server
+│   ├── gesture_model.pkl       # Trained ML model (generated after training)
+│   ├── gesture_data.csv        # Dataset containing collected samples
+│   ├── hand_landmarker.task    # MediaPipe hand tracking model
+│   └── requirements.txt
 │
-└── frontend/
-    └── src/
-        └── pages/
-            └── Index.tsx       # Main React UI
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   └── App.tsx
+│   ├── package.json
+│   └── vite.config.ts
+│
+└── README.md
 ```
 
 ---
 
 ## 🚀 Getting Started
 
-### 1. Clone the repo
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/signal-ai.git
-cd signal-ai
+git clone https://github.com/deepak-sh-07/Hand-Sign-Detection
+cd Hand-Sign-Detection
 ```
 
-### 2. Install Python dependencies
+---
+
+## ⚙️ Backend Setup
+
+### Install Python Dependencies
 
 ```bash
+cd backend
 pip install mediapipe opencv-python scikit-learn numpy websockets joblib pandas
 ```
 
-### 3. Download MediaPipe model
+### Download MediaPipe Model
 
-Download `hand_landmarker.task` from [MediaPipe Models](https://developers.google.com/mediapipe/solutions/vision/hand_landmarker) and place it in the root directory.
+Download `hand_landmarker.task` from [MediaPipe Models](https://developers.google.com/mediapipe/solutions/vision/hand_landmarker) and place it inside the `backend/` folder.
 
-### 4. Collect training data
-
-```bash
-python collect.py
-```
-
-> Press keys **0–9** to label the gesture you're showing. Each keypress saves one sample to `gesture_data.csv`. Collect ~100 samples per gesture.
-
-### 5. Train the model
+### Collect Gesture Data
 
 ```bash
-python train.py
+python collect_data.py
 ```
 
-> This generates `gesture_model.pkl`. You'll see accuracy and a classification report printed.
+> Press keys `0–9` to label the gesture you're showing. Collect **80–100 samples** per gesture for best accuracy.
 
-### 6. Start the WebSocket server
+### Train the Model
+
+```bash
+python model.py
+```
+
+> Generates `gesture_model.pkl`. Accuracy report prints to console.
+
+### Start the Backend Server
 
 ```bash
 python server.py
 ```
 
-### 7. Start the frontend
+> WebSocket server starts on `ws://localhost:8765`
+
+---
+
+## 💻 Frontend Setup
+
+Open a new terminal:
 
 ```bash
 cd frontend
@@ -152,7 +156,24 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) and click **Start Detection**.
+> Frontend runs on `http://localhost:5173` — click **Start Detection** to begin.
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+<img src="frontend/src/components/screenshots/1.png" width="49%" />
+<img src="frontend/src/components/screenshots/2.png" width="49%" />
+
+<img src="frontend/src/components/screenshots/3.png" width="49%" />
+<img src="frontend/src/components/screenshots/4.png" width="49%" />
+
+<img src="frontend/src/components/screenshots/5.png" width="49%" />
+<img src="frontend/src/components/screenshots/6.png" width="49%" />
+
+</div>
 
 ---
 
@@ -165,16 +186,16 @@ x = (landmark.x - wrist.x) / scale
 y = (landmark.y - wrist.y) / scale
 ```
 
-Where `scale` is the Euclidean distance between the **wrist (point 0)** and the **middle finger tip (point 12)**. This makes predictions **invariant to hand size and position** in the frame.
+Where `scale` is the Euclidean distance between **wrist (point 0)** and **middle finger tip (point 12)**. This makes predictions invariant to hand size, position, and camera distance.
 
-These 42 features are passed to a `RandomForestClassifier(n_estimators=100)` which outputs both a class prediction and confidence scores via `predict_proba`.
+These 42 features are passed to a `RandomForestClassifier(n_estimators=100)` which outputs both a predicted class and confidence scores via `predict_proba`.
 
 ---
 
 ## 🎨 Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+|-------|------------|
 | Hand Tracking | MediaPipe HandLandmarker |
 | ML Classifier | scikit-learn RandomForest |
 | Backend | Python · asyncio · websockets · OpenCV |
@@ -188,8 +209,8 @@ These 42 features are passed to a `RandomForestClassifier(n_estimators=100)` whi
 - Collect samples in **varied lighting** conditions
 - Show gestures at **different distances** from the camera
 - Collect at least **80–100 samples** per gesture
-- Avoid gestures that look geometrically similar (e.g. OK vs Call Me)
-- Retrain after adding new gesture classes
+- Avoid geometrically similar gestures — they confuse the classifier
+- Always retrain after adding or removing gesture classes
 
 ---
 
@@ -198,8 +219,9 @@ These 42 features are passed to a `RandomForestClassifier(n_estimators=100)` whi
 - [ ] Add more gesture classes
 - [ ] Replace Random Forest with a lightweight neural network (MLP)
 - [ ] Two-hand gesture support
-- [ ] Map gestures to system actions (media control, mouse, etc.)
-- [ ] Mobile support
+- [ ] Map gestures to system actions (media control, shortcuts)
+- [ ] Improve robustness across varied lighting and backgrounds
+- [ ] Browser-native version (no local server required)
 
 ---
 

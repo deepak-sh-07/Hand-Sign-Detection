@@ -43,7 +43,7 @@ HAND_CONNECTIONS = [
     (0,17)
 ]
 
-async def stream(websocket):
+async def stream(websocket): #socket.on('connection')
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
@@ -123,7 +123,7 @@ async def stream(websocket):
 
 async def main():
     print("WebSocket server running on ws://localhost:8765")
-    async with websockets.serve(stream, "localhost", 8765):
+    async with websockets.serve(stream, "localhost", 8765): #server.listen()
         await asyncio.Future()
 
 asyncio.run(main())
