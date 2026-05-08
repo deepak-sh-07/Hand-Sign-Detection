@@ -7,14 +7,14 @@
 
 <div align="center">
 
-<img src="src/components/screenshot/1.png" width="49%" />
-<img src="src/components/screenshot/2.png" width="49%" />
+<img src="Frontend/src/components/screenshots/1.png" width="49%" />
+<img src="Frontend/src/components/screenshots/2.png" width="49%" />
 
-<img src="src/components/screenshot/3.png" width="49%" />
-<img src="src/components/screenshot/4.png" width="49%" />
+<img src="Frontend/src/components/screenshots/3.png" width="49%" />
+<img src="Frontend/src/components/screenshots/4.png" width="49%" />
 
-<img src="src/components/screenshot/5.png" width="49%" />
-<img src="src/components/screenshot/6.png" width="49%" />
+<img src="Frontend/src/components/screenshots/5.png" width="49%" />
+<img src="Frontend/src/components/screenshots/6.png" width="49%" />
 
 </div>
 
