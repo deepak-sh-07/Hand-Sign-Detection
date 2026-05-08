@@ -109,12 +109,14 @@ const Index = () => {
             <Hand className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">
-              v2.1 · neural
-            </p>
-            <h2 className="text-lg font-bold leading-none">
-              SIGNAL<span className="text-primary">.AI</span>
-            </h2>
+            <div>
+  {/* <p className="font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">
+    v2.1 · 
+  </p> */}
+  <h2 className="text-lg font-bold leading-none">
+    SIGNAL<span className="text-primary">.AI</span>
+  </h2>
+</div>
           </div>
         </div>
       </header>
