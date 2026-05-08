@@ -3,20 +3,6 @@
 # 🤚 SIGNAL.AI
 ### Real-Time Hand Gesture Detection Engine
 
-## 📸 Screenshots
-
-<div align="center">
-
-<img src="Frontend/src/components/screenshots/1.png" width="49%" />
-<img src="Frontend/src/components/screenshots/2.png" width="49%" />
-
-<img src="Frontend/src/components/screenshots/3.png" width="49%" />
-<img src="Frontend/src/components/screenshots/4.png" width="49%" />
-
-<img src="Frontend/src/components/screenshots/5.png" width="49%" />
-<img src="Frontend/src/components/screenshots/6.png" width="49%" />
-
-</div>
 
 <br/>
 
@@ -81,7 +67,20 @@ WebSocket Server (ws://localhost:8765)
   ▼
 React Frontend (localhost:5173) ← live annotated frame + prediction
 ```
+## 📸 Screenshots
 
+<div align="center">
+
+<img src="Frontend/src/components/screenshots/1.png" width="49%" />
+<img src="Frontend/src/components/screenshots/2.png" width="49%" />
+
+<img src="Frontend/src/components/screenshots/3.png" width="49%" />
+<img src="Frontend/src/components/screenshots/4.png" width="49%" />
+
+<img src="Frontend/src/components/screenshots/5.png" width="49%" />
+<img src="Frontend/src/components/screenshots/6.png" width="49%" />
+
+</div>
 ---
 
 ## 📁 Project Structure
