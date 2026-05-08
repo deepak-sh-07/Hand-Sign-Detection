@@ -7,7 +7,7 @@
 
 <div align="center">
 
-<img src="src/components/screenshot/" width="49%" />
+<img src="src/components/screenshot/1.png" width="49%" />
 <img src="src/components/screenshot/2.png" width="49%" />
 
 <img src="src/components/screenshot/3.png" width="49%" />
