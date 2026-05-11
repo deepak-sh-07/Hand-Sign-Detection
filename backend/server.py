@@ -74,9 +74,6 @@ async def stream(websocket): #socket.on('connection')
                     cx, cy = int(lm.x * w), int(lm.y * h)
                     cv2.circle(frame, (cx, cy), 5, (255, 255, 0), -1)   # cyan dots
 
-
-
-
                 # Draw connections
                 for connection in HAND_CONNECTIONS:
                     start_idx, end_idx = connection
