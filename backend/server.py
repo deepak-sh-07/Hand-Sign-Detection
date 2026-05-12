@@ -42,7 +42,7 @@ HAND_CONNECTIONS = [
     (13,17),(17,18),(18,19),(19,20),
     (0,17)
 ]
-
+hand_name = ""
 async def stream(websocket): #socket.on('connection')
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -60,10 +60,12 @@ async def stream(websocket): #socket.on('connection')
 
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
             result = detector.detect(mp_image)
-
             prediction = "No hand detected"
             confidence = 0.0
-
+            if result.handedness:
+             if(result.handedness[0][0].category_name=="Left"): 
+              hand_name = "Right Hand" #because the image is flipped 
+             else:hand_name = "Left Hand"
             h, w, _ = frame.shape
 
             if result.hand_landmarks:

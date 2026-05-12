@@ -1,13 +1,18 @@
-import cv2    #OpenCV for video capture and drawing
-import mediapipe as mp # gives pretrained ML model for hand tracking
+import cv2    
+import mediapipe as mp 
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import joblib
 import math
 model = joblib.load("gesture_model.pkl")
 base_options = python.BaseOptions(model_asset_path='hand_landmarker.task') # loading a pretrained model for hand tracking from the mediapipe library.
+base_options2 = python.BaseOptions(model_asset_path='blaze_face_short_range.tflite') # loading a pretrained model for face detection from the mediapipe library.
 
-options = vision.HandLandmarkerOptions(
+options2 = vision.FaceDetectorOptions( #inbuilt function to set options for face tracking.  
+    base_options=base_options2,
+    running_mode=vision.RunningMode.IMAGE
+)
+options = vision.HandLandmarkerOptions( #inbuilt function to set options for hand tracking.  
     base_options=base_options,
     num_hands=2
 )
@@ -24,7 +29,7 @@ gestures = {
     9: "Thumbs Down"
 }
 detector = vision.HandLandmarker.create_from_options(options) #This initializes the actual ML pipeline for hand tracking using the specified options.
-
+detector2 = vision.FaceDetector.create_from_options(options2) #This initializes the actual ML pipeline for face tracking using the specified options.
 cap = cv2.VideoCapture(0) # start camera default camera is 0
 
 HAND_CONNECTIONS = [ #This defines which points should be connected.
@@ -35,7 +40,7 @@ HAND_CONNECTIONS = [ #This defines which points should be connected.
     (13,17),(17,18),(18,19),(19,20),
     (0,17)
 ]
-
+hand_name = ""
 while cap.isOpened(): #jab tak camera open hai
     ret, frame = cap.read()
     if not ret:
@@ -47,6 +52,12 @@ while cap.isOpened(): #jab tak camera open hai
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
     result = detector.detect(mp_image)
 
+    result2 = detector2.detect(mp_image)
+    print(result2)
+    if result.handedness:
+        if(result.handedness[0][0].category_name=="Left"): 
+            hand_name = "Right Hand" #because the image is flipped 
+        else:hand_name = "Left Hand"
     if result.hand_landmarks:
         h, w, _ = frame.shape
 
@@ -54,14 +65,15 @@ while cap.isOpened(): #jab tak camera open hai
             for lm in hand:
                 cx, cy = int(lm.x * w), int(lm.y * h)
                 cv2.circle(frame, (cx, cy), 5, (0, 255, 0), -1)
-                print("x = ",cx,"y = ", cy)
-            for connection in HAND_CONNECTIONS:
+                # print(hand)
+                # print("x = ",cx,"y = ", cy)
+            for connection in HAND_CONNECTIONS: 
                 start_idx, end_idx = connection
                 x1 = int(hand[start_idx].x * w)
                 y1 = int(hand[start_idx].y * h)
                 x2 = int(hand[end_idx].x * w)
                 y2 = int(hand[end_idx].y * h)
-                cv2.line(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                cv2.line(frame, (x1, y1), (x2, y2), (255, 0, 0), 2) #here for the lines between the points
             # Prepare features for prediction
             # ===== PREDICTION =====
                 wrist = hand[0]
@@ -78,7 +90,7 @@ while cap.isOpened(): #jab tak camera open hai
                 prediction = model.predict([features])
                 label = prediction[0]
                 label = gestures[label]
-                cv2.putText(frame, f"Gesture: {label}", (10, 100),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                cv2.putText(frame, f"Gesture: {hand_name} {label}", (10, 100),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
                      
     cv2.imshow("Hand Tracking", frame)
 
