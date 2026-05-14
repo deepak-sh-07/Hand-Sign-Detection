@@ -6,9 +6,9 @@ import joblib
 import math
 model = joblib.load("gesture_model.pkl")
 base_options = python.BaseOptions(model_asset_path='hand_landmarker.task') # loading a pretrained model for hand tracking from the mediapipe library.
-base_options2 = python.BaseOptions(model_asset_path='blaze_face_short_range.tflite') # loading a pretrained model for face detection from the mediapipe library.
-
-options2 = vision.FaceDetectorOptions( #inbuilt function to set options for face tracking.  
+base_options2 = python.BaseOptions(model_asset_path='face_landmarker.task') # loading a pretrained model for face detection from the mediapipe library.
+# face detection model https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task
+options2 = vision.FaceLandmarkerOptions( #inbuilt function to set options for face tracking.  
     base_options=base_options2,
     running_mode=vision.RunningMode.IMAGE
 )
@@ -29,7 +29,7 @@ gestures = {
     9: "Thumbs Down"
 }
 detector = vision.HandLandmarker.create_from_options(options) #This initializes the actual ML pipeline for hand tracking using the specified options.
-detector2 = vision.FaceDetector.create_from_options(options2) #This initializes the actual ML pipeline for face tracking using the specified options.
+detector2 = vision.FaceLandmarker.create_from_options(options2) #This initializes the actual ML pipeline for face tracking using the specified options.
 cap = cv2.VideoCapture(0) # start camera default camera is 0
 
 HAND_CONNECTIONS = [ #This defines which points should be connected.
@@ -52,8 +52,24 @@ while cap.isOpened(): #jab tak camera open hai
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
     result = detector.detect(mp_image)
 
-    result2 = detector2.detect(mp_image)
-    print(result2)
+    result2 = detector2.detect(mp_image) 
+    #see inside result is a list called face_land marks which is also a list [0] first face and [1] second face and the inside [0][0] first land mark suppose chin
+    #result2 -> list(face_landmarks)(multiple faces if)->face_landmarks[0](first fase)->face_landmarks[0][0](first landmark)
+    # print("Face Coordinates : ",result2, "Ended")
+    
+    if result2.face_landmarks:
+
+        h, w, _ = frame.shape
+
+        for face in result2.face_landmarks:
+         for landmark in face:
+
+            cx = int(landmark.x * w)
+            cy = int(landmark.y * h)
+
+            cv2.circle(frame, (cx,cy), 1, (0,255,0), -1)
+
+
     if result.handedness:
         if(result.handedness[0][0].category_name=="Left"): 
             hand_name = "Right Hand" #because the image is flipped 
@@ -99,3 +115,7 @@ while cap.isOpened(): #jab tak camera open hai
 
 cap.release()
 cv2.destroyAllWindows()
+
+
+
+
