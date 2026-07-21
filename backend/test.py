@@ -62,12 +62,22 @@ while cap.isOpened(): #jab tak camera open hai
         h, w, _ = frame.shape
 
         for face in result2.face_landmarks:
-         for landmark in face:
+            top = face[159]
+            bottom = face[145]
+
+            eye_distance = abs(top.y - bottom.y)
+
+            if eye_distance < 0.01:
+                cv2.putText(frame, "Blink", (50,50),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            1, (0,0,255), 2)
+        
+        for landmark in face:
 
             cx = int(landmark.x * w)
             cy = int(landmark.y * h)
 
-            cv2.circle(frame, (cx,cy), 1, (0,255,0), -1)
+            cv2.circle(frame, (cx,cy), 1, (255,0,0), -1)
 
 
     if result.handedness:

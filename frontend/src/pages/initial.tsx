@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Activity, Camera, Cpu, Hand, Sparkles, Zap, Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WaveGrid } from "@/components/ui/wave-grid";
 import { useHandSign } from "@/hooks/useWebSocket";
-import hand from "@/assets/hero-hand.jpg";
 
 const SIGNS = [
   { sign: "✊", label: "Closed Hand" },
@@ -98,10 +98,7 @@ const Index = () => {
 
   return (
     <div className="relative min-h-screen">
-      <div className="pointer-events-none fixed inset-0 grid-bg opacity-40" style={{ zIndex: 0 }} />
-      <div className="pointer-events-none fixed inset-0" style={{ zIndex: 0, background: "radial-gradient(ellipse 80% 60% at 20% 0%, hsl(186 100% 55% / 0.12), transparent 60%), radial-gradient(ellipse 60% 50% at 90% 100%, hsl(305 100% 60% / 0.12), transparent 60%)" }} />
-      <div className="pointer-events-none fixed -top-40 -right-40 h-[600px] w-[600px] rounded-full bg-accent/20 blur-[140px]" style={{ zIndex: 0 }} />
-      <div className="pointer-events-none fixed -bottom-40 -left-40 h-[600px] w-[600px] rounded-full bg-primary/20 blur-[140px]" style={{ zIndex: 0 }} />
+      <WaveGrid />
 
       <header className="relative z-10 mx-auto flex max-w-7xl items-center px-0 pt-2 pb-0">
         <div className="flex items-center gap-3">
@@ -114,7 +111,7 @@ const Index = () => {
     v2.1 · 
   </p> */}
   <h2 className="text-lg font-bold leading-none">
-    SIGNAL<span className="text-primary">.AI</span>
+    SignSense  <span className="text-primary"></span>
   </h2>
 </div>
           </div>
@@ -122,9 +119,9 @@ const Index = () => {
       </header>
 
       <main className="relative z-10 mx-auto max-w-7xl px-0 pt-0 pb-24">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+        <div className="flex flex-col gap-12 lg:flex-row lg:items-center">
 
-          <div className="space-y-8">
+          <div className="min-w-0 flex-1 space-y-8">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary/40 px-4 py-1.5 backdrop-blur">
               <span className="relative flex h-2 w-2">
                 <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${connected ? "animate-ping bg-primary" : "bg-destructive"}`} />
@@ -181,7 +178,7 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative w-full flex-shrink-0" style={{ maxWidth: "640px" }}>
             <div className="absolute -inset-4 rounded-[2rem] border border-primary/20" />
             <div className="scanline relative overflow-hidden rounded-2xl border border-border bg-gradient-surface shadow-elegant">
 
@@ -205,12 +202,11 @@ const Index = () => {
                 </div>
               </div>
 
-              <div className="relative aspect-square bg-black">
+              <div className="relative aspect-square bg-background">
                 {frameSrc ? (
                   <img src={frameSrc} alt="Live camera feed with landmarks" className="absolute inset-0 h-full w-full object-cover" />
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                    <img src={hand} alt="Hand preview" className="absolute inset-0 h-full w-full object-cover opacity-60" />
                     <div className="relative z-10 flex flex-col items-center gap-4">
                       <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary/40 backdrop-blur">
                         <Camera className="h-8 w-8 text-muted-foreground" />
@@ -312,8 +308,7 @@ const Index = () => {
       </main>
 
       <footer className="relative z-10 border-t border-border">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-0 py-6 font-mono text-xs text-muted-foreground">
-          <span>© 2026 SIGNAL.AI</span>
+        <div className="mx-auto flex max-w-7xl items-center justify-end px-0 py-6 font-mono text-xs text-muted-foreground">
           <span className="flex items-center gap-2">
             <span className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-primary animate-pulse-glow" : "bg-destructive"}`} />
             {connected ? "All systems nominal" : "Backend offline"}
