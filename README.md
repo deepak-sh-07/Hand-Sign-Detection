@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🤚 SIGNAL.AI
+# 🤚 GestureLens
 ### Real-Time Hand Gesture Detection Engine
 
 <br/>
@@ -23,7 +23,7 @@
 
 ## ✨ What is this?
 
-**SIGNAL.AI** is a real-time hand gesture recognition system that translates your hand movements into classified gestures — live, from your webcam, with no data leaving your device.
+**GestureLens** is a real-time hand gesture recognition system that translates your hand movements into classified gestures — live, from your webcam, with no data leaving your device.
 
 It uses **Google's MediaPipe** to track 21 hand landmarks per frame, normalizes them relative to wrist position and hand scale, and feeds them into a trained **Random Forest classifier** that predicts your gesture in milliseconds. A **React frontend** receives the live annotated video stream and predictions over WebSocket.
 
@@ -72,7 +72,7 @@ React Frontend (localhost:5173) ← live annotated frames + predictions
 ## 📁 Project Structure
 
 ```bash
-SIGNAL.AI/
+GestureLens/
 │
 ├── backend/
 │   ├── collect_data.py         # Collect gesture landmark data
@@ -101,8 +101,8 @@ SIGNAL.AI/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/deepak-sh-07/Hand-Sign-Detection
-cd Hand-Sign-Detection
+git clone https://github.com/deepak-sh-07/GestureLens
+cd GestureLens
 ```
 
 ---
