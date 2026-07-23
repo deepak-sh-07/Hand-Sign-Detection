@@ -6,7 +6,7 @@ import csv
 import math
 import time
 
-# ========== MODEL SETUP ==========
+#model setup
 base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
 
 options = vision.HandLandmarkerOptions(
@@ -18,7 +18,7 @@ detector = vision.HandLandmarker.create_from_options(options)
 
 cap = cv2.VideoCapture(0)
 
-# ========== LABEL MAP ==========
+# label for the gestures, 0-9 for digits
 labels = {
     ord('0'): 0,
     ord('1'): 1,
@@ -36,7 +36,7 @@ labels = {
 last_save_time = 0
 cooldown = 0.5  # seconds
 
-# ========== MAIN LOOP ==========
+# main loop
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret: #stops if camera feed is not available
